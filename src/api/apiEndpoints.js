@@ -76,4 +76,11 @@ export const API_ENDPOINTS = {
     UPDATE_ORDER_STATUS: "/api/reviewCard/status",
     GET_ALL_ORDERS: "/api/reviewCard",
   },
+  PAYMENT: {
+    CREATE_ORDER: "/api/payment/create-order",
+    VERIFY_PAYMENT: "/api/payment/verify",
+    GET_ALL: "/api/payment/getAllPayments",
+    GET_ONE: "/api/payment/getOnePayment", 
+    SEND_WHATSAPP: "/api/payment/sendManualPaymentLink",
+  },
 };

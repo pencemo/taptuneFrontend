@@ -2,10 +2,11 @@ import axios from "axios";
 const url = import.meta.env.VITE_API_BASE_URL;
 
 const axiosInstance = axios.create({
-  baseURL: url, 
-  timeout: 20000, 
+  baseURL: url,
+  timeout: 20000,
   headers: {
     "Content-Type": "application/json",
+    "ngrok-skip-browser-warning": "true",
   },
   // "Access-Control-Allow-Origin" : '*',
   withCredentials: true,

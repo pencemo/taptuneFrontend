@@ -52,78 +52,83 @@ const data = {
       plan: "Enterprise",
     },
   ],
- navMain : [
-  {
-    title: "Home",
-    url: "/admin",
-    icon: Home,
-  },
-  {
-    title: "Profile",
-    url: "/admin/profile",
-    icon: User,
-    roles: ["sales", "Sales"],
-  },
-  {
-    title: "Card Orders",
-    url: "/admin/card-order",
-    icon: CreditCard,
-  },
-  {
-    title: "Review Card Orders",
-    url: "/admin/reviewcard",
-    icon: Star,
-  },
-  {
-    title: "Users List",
-    url: "/admin/user-list",
-    icon: Users,
-  },
-  {
-    title: "Designs",
-    url: "/admin/card-list",
-    icon: LayoutGrid,
-  },
-  {
-    title: "Manage Admin",
-    url: "/admin/admin-list",
-    icon: Shield,
-    roles: ["admin", "Admin"],
-  },
-  {
-    title: "Sales",
-    url: "/admin/sales",
-    icon: Briefcase,
-    roles: ["admin", "Admin"],
-  },
-  {
-    title: "Enquiries",
-    url: "/admin/enquiry",
-    icon: MessageSquare,
-  },
-  {
-    title: "Profiles Created",
-    url: "/admin/profiles",
-    icon: IdCard,
-  },
-  {
-    title: "Lead Connections",
-    url: "/admin/connections",
-    icon: Link2,
-    roles: ["sales"],
-  },
-  {
-    title: "Notifications",
-    url: "/admin/notification",
-    icon: Bell,
-  },
-  {
-    title: "Sign Out",
-    icon: LogOut,
-    action: "logout",
-    url: "/c",
-  },
-]
+  navMain: [
+    {
+      title: "Home",
+      url: "/admin",
+      icon: Home,
+    },
+    {
+      title: "Profile",
+      url: "/admin/profile",
+      icon: User,
+      roles: ["sales", "Sales"],
+    },
+    {
+      title: "Card Orders",
+      url: "/admin/card-order",
+      icon: CreditCard,
+    },
+    {
+      title: "Payments",
+      url: "/admin/payments",
+      icon: CreditCard,
+    },
+    {
+      title: "Review Card Orders",
+      url: "/admin/reviewcard",
+      icon: Star,
+    },
+    {
+      title: "Users List",
+      url: "/admin/user-list",
+      icon: Users,
+    },
+    {
+      title: "Designs",
+      url: "/admin/card-list",
+      icon: LayoutGrid,
+    },
+    {
+      title: "Manage Admin",
+      url: "/admin/admin-list",
+      icon: Shield,
+      roles: ["admin", "Admin"],
+    },
+    {
+      title: "Sales",
+      url: "/admin/sales",
+      icon: Briefcase,
+      roles: ["admin", "Admin"],
+    },
+    {
+      title: "Enquiries",
+      url: "/admin/enquiry",
+      icon: MessageSquare,
+    },
+    {
+      title: "Profiles Created",
+      url: "/admin/profiles",
+      icon: IdCard,
+    },
+    {
+      title: "Lead Connections",
+      url: "/admin/connections",
+      icon: Link2,
+      roles: ["sales"],
+    },
+    {
+      title: "Notifications",
+      url: "/admin/notification",
+      icon: Bell,
+    },
+    {
+      title: "Sign Out",
+      icon: LogOut,
+      action: "logout",
+      url: "/c",
+    },
+  ],
 };
 
 export function AppSidebar({
