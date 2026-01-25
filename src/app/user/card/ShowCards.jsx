@@ -56,7 +56,7 @@ export default function ShowCards() {
         <div className="max-w-7xl mx-auto">
           <div className="mb-5">
             <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-2">
-              Card Orders
+              Cards 
             </h1>
             <p className="text-gray-600 text-sm">
               Choose from our premium collection of digital business cards

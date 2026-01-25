@@ -40,6 +40,8 @@ function ProfileWrapper() {
   const { mutate: connectMutate, isPending: isConnecting } = useConnectProfile();
   const { mutate: incrementView } = useIncrementProfileViews();
 
+
+
   const profile = data?.data || null;
   const isProfileActive = data?.success === true && profile?.isActive === true;
 
@@ -206,6 +208,7 @@ const handleConnectSubmit = () => {
           loading={isConnecting}
         />
       )}
+
     </>
   );
 }

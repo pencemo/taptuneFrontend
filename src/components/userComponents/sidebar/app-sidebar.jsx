@@ -55,6 +55,11 @@ const data = {
       url: "/user/profiles",
       icon: Bot,
     },
+    // {
+    //   title: "Review Card Orders",
+    //   url: "/user/reviewcardorder",
+    //   icon: Bot,
+    // },
     {
       title: "Connections",
       url: "/user/connections",

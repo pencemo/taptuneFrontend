@@ -37,6 +37,7 @@ import SalesUsersTable from "./components/adminComponents/SalesComp/SalesViewTab
 import AdminReviewCardOrders from "./components/adminComponents/reviewCardComp/CardOrderView";
 import ReviewCardPage from "./app/admin/reviewCards/reviewCardPage.jsx";
 import AdminPayments from "./app/admin/payment/PaymentPage";
+import ReviewCardOrders from "./app/user/card/ReviewCardsView";
 
 function App() {
   const location = useLocation();
@@ -100,6 +101,7 @@ function App() {
           <Route path="settings" element={<AccountSetupForm />} />
           <Route path="notification" element={<NotificationsPage />} />
           <Route path="profile/edit/:id" element={<EditProfilePage />} />
+          <Route path="reviewcardorder" element={<ReviewCardOrders />} />
           <Route path="boarding" element={<BoardingParentComp />} />
         </Route>
 
