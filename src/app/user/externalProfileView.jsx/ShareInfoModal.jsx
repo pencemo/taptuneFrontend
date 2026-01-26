@@ -1,5 +1,3 @@
-
-
 "use client";
 
 import { useState } from "react";
@@ -35,7 +33,7 @@ import {
 } from "lucide-react";
 
 // --- Custom Phone Input Helper ---
-const CustomPhoneInput = ({ value, onChange, id, required }) => {
+const CustomPhoneInput = ({ value, onChange, id, required, isDark }) => {
   return (
     <div className="relative">
       <PhoneInput
@@ -45,10 +43,15 @@ const CustomPhoneInput = ({ value, onChange, id, required }) => {
         onChange={onChange}
         id={id}
         required={required}
-        className="flex h-10 w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm ring-offset-white file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-gray-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-purple-600 focus-within:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+        className={`flex h-10 w-full rounded-md border px-3 py-2 text-sm ring-offset-white file:border-0 file:bg-transparent file:text-sm file:font-medium focus-within:outline-none focus-within:ring-2 focus-within:ring-purple-600 focus-within:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-colors 
+          ${
+            isDark
+              ? "border-slate-800 bg-slate-900 text-slate-100 placeholder:text-slate-500"
+              : "border-gray-200 bg-white text-gray-900 placeholder:text-gray-500"
+          }`}
         numberInputProps={{
-          className:
-            "bg-transparent border-none outline-none text-gray-900 placeholder:text-gray-500 w-full h-full focus:ring-0 ml-2",
+          className: `bg-transparent border-none outline-none w-full h-full focus:ring-0 ml-2 
+            ${isDark ? "text-slate-100 placeholder:text-slate-500" : "text-gray-900 placeholder:text-gray-500"}`,
         }}
       />
     </div>
@@ -62,19 +65,16 @@ export default function ShareInfoModal({
   setFormData,
   onSubmit,
   loading,
+  isDark = false, // Added isDark prop
 }) {
-  // --- STATE MANAGEMENT ---
   const [view, setView] = useState("form"); // 'form' | 'scanner'
   const [showAdditionalFields, setShowAdditionalFields] = useState(false);
 
-  // --- HANDLERS ---
   const handleScanComplete = (scannedData) => {
-    // 1. Create formatted notes
     const currentNotes = formData.notes || "";
     const newNotes =
       `${currentNotes}\n\n--- Scanned Data ---\n${scannedData.rawText || ""}`.trim();
 
-    // 2. Update Form Data
     setFormData((prev) => ({
       ...prev,
       fullName: scannedData.name || prev.fullName,
@@ -84,7 +84,6 @@ export default function ShareInfoModal({
       notes: newNotes,
     }));
 
-    // 3. Switch back to form view
     setView("form");
   };
 
@@ -102,28 +101,48 @@ export default function ShareInfoModal({
     });
   };
 
-  // Reset view when modal closes/opens
   const handleOpenChange = (v) => {
     if (!v) {
       onClose();
-      // Short delay to reset view after animation closes
       setTimeout(() => setView("form"), 300);
     }
   };
 
+  // Dynamic Theme Classes
+  const theme = {
+    bg: isDark ? "bg-slate-950" : "bg-white",
+    bgMuted: isDark ? "bg-slate-900/50" : "bg-gray-50/50",
+    border: isDark ? "border-slate-800" : "border-gray-200",
+    text: isDark ? "text-slate-100" : "text-gray-900",
+    textMuted: isDark ? "text-slate-400" : "text-gray-500",
+    input: isDark
+      ? "bg-slate-900 border-slate-800 text-slate-100 focus-visible:ring-purple-500"
+      : "bg-white border-gray-200 text-gray-900 focus-visible:ring-purple-600",
+    card: isDark
+      ? "bg-purple-900/20 border-purple-900/30"
+      : "bg-purple-50 border-purple-100",
+  };
+
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="flex flex-col gap-0 p-0 w-[95vw] sm:w-full sm:max-w-lg max-h-[90vh] rounded-xl overflow-hidden bg-white">
+      <DialogContent
+        className={`flex flex-col gap-0 p-0 w-[95vw] sm:w-full sm:max-w-lg max-h-[90vh] rounded-xl overflow-hidden shadow-2xl transition-colors duration-200 ${theme.bg} ${theme.border}`}
+      >
         {/* --- HEADER --- */}
-        <DialogHeader className="px-6 py-5 border-b bg-white flex-shrink-0 min-h-[85px] flex justify-center">
-          {/* Using a key here triggers a subtle fade animation on title change */}
+        <DialogHeader
+          className={`px-6 py-5 border-b flex-shrink-0 min-h-[85px] flex justify-center ${theme.bg} ${theme.border}`}
+        >
           <div key={view} className="animate-in fade-in duration-300">
             {view === "form" ? (
               <>
-                <DialogTitle className="text-xl sm:text-2xl font-bold text-gray-900">
+                <DialogTitle
+                  className={`text-xl sm:text-2xl font-bold ${theme.text}`}
+                >
                   Share Your Information
                 </DialogTitle>
-                <DialogDescription className="text-sm text-gray-500 mt-1">
+                <DialogDescription
+                  className={`text-sm mt-1 ${theme.textMuted}`}
+                >
                   Fill in details manually or scan your business card.
                 </DialogDescription>
               </>
@@ -132,16 +151,16 @@ export default function ShareInfoModal({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8 -ml-2 rounded-full hover:bg-slate-100 transition-colors"
+                  className={`h-8 w-8 -ml-2 rounded-full transition-colors ${isDark ? "hover:bg-slate-800 text-slate-400" : "hover:bg-slate-100 text-gray-600"}`}
                   onClick={() => setView("form")}
                 >
-                  <ChevronLeft className="h-5 w-5 text-gray-600" />
+                  <ChevronLeft className="h-5 w-5" />
                 </Button>
                 <div>
-                  <DialogTitle className="text-xl font-bold text-gray-900">
+                  <DialogTitle className={`text-xl font-bold ${theme.text}`}>
                     Scan Card
                   </DialogTitle>
-                  <div className="flex items-center gap-1 text-[10px] font-medium text-purple-600 bg-purple-50 px-2 py-0.5 rounded w-fit mt-1">
+                  <div className="flex items-center gap-1 text-[10px] font-medium text-purple-500 bg-purple-500/10 px-2 py-0.5 rounded w-fit mt-1">
                     <Languages className="h-3 w-3" /> ENG + MAL
                   </div>
                 </div>
@@ -151,21 +170,26 @@ export default function ShareInfoModal({
         </DialogHeader>
 
         {/* --- BODY CONTENT --- */}
-        <div className="flex-1 overflow-y-auto p-6 bg-white relative overflow-x-hidden">
-          {/* VIEW 1: THE FORM */}
+        <div
+          className={`flex-1 overflow-y-auto p-6 relative overflow-x-hidden ${theme.bg}`}
+        >
           {view === "form" && (
             <div className="animate-in slide-in-from-left-8 fade-in duration-300 ease-out">
               {/* Scan Banner */}
-              <div className="mb-6 bg-purple-50 p-4 rounded-xl border border-purple-100 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-sm transition-all hover:shadow-md hover:border-purple-200">
+              <div
+                className={`mb-6 p-4 rounded-xl border flex flex-col sm:flex-row items-center justify-between gap-3 shadow-sm transition-all hover:shadow-md ${theme.card}`}
+              >
                 <div className="flex items-center gap-3">
-                  <div className="bg-purple-100 p-2 rounded-lg text-purple-600">
+                  <div
+                    className={`${isDark ? "bg-purple-500/20 text-purple-400" : "bg-purple-100 text-purple-600"} p-2 rounded-lg`}
+                  >
                     <ScanLine className="h-5 w-5" />
                   </div>
                   <div>
-                    <h4 className="font-semibold text-gray-900 text-sm">
+                    <h4 className={`font-semibold text-sm ${theme.text}`}>
                       Have a Business Card?
                     </h4>
-                    <p className="text-xs text-gray-500">
+                    <p className={`text-xs ${theme.textMuted}`}>
                       Auto-fill details instantly
                     </p>
                   </div>
@@ -188,7 +212,10 @@ export default function ShareInfoModal({
                 <div className="space-y-4">
                   <div className="grid gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="fullName" className="text-sm font-medium">
+                      <Label
+                        htmlFor="fullName"
+                        className={`text-sm font-medium ${isDark ? "text-slate-300" : "text-gray-700"}`}
+                      >
                         Full Name <span className="text-red-500">*</span>
                       </Label>
                       <Input
@@ -199,11 +226,14 @@ export default function ShareInfoModal({
                           setFormData({ ...formData, fullName: e.target.value })
                         }
                         required
-                        className="focus-visible:ring-purple-600 transition-shadow"
+                        className={theme.input}
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="email" className="text-sm font-medium">
+                      <Label
+                        htmlFor="email"
+                        className={`text-sm font-medium ${isDark ? "text-slate-300" : "text-gray-700"}`}
+                      >
                         Email
                       </Label>
                       <Input
@@ -214,16 +244,20 @@ export default function ShareInfoModal({
                         onChange={(e) =>
                           setFormData({ ...formData, email: e.target.value })
                         }
-                        className="focus-visible:ring-purple-600 transition-shadow"
+                        className={theme.input}
                       />
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="phone" className="text-sm font-medium">
+                        <Label
+                          htmlFor="phone"
+                          className={`text-sm font-medium ${isDark ? "text-slate-300" : "text-gray-700"}`}
+                        >
                           Phone Number <span className="text-red-500">*</span>
                         </Label>
                         <CustomPhoneInput
                           id="phone"
+                          isDark={isDark}
                           value={formData.phone}
                           onChange={(val) =>
                             setFormData({ ...formData, phone: val })
@@ -234,7 +268,7 @@ export default function ShareInfoModal({
                       <div className="space-y-2">
                         <Label
                           htmlFor="designation"
-                          className="text-sm font-medium"
+                          className={`text-sm font-medium ${isDark ? "text-slate-300" : "text-gray-700"}`}
                         >
                           Designation
                         </Label>
@@ -248,7 +282,7 @@ export default function ShareInfoModal({
                               designation: e.target.value,
                             })
                           }
-                          className="focus-visible:ring-purple-600 transition-shadow"
+                          className={theme.input}
                         />
                       </div>
                     </div>
@@ -260,7 +294,7 @@ export default function ShareInfoModal({
                     className="absolute inset-0 flex items-center"
                     aria-hidden="true"
                   >
-                    <div className="w-full border-t border-gray-200"></div>
+                    <div className={`w-full border-t ${theme.border}`}></div>
                   </div>
                   <div className="relative flex justify-center">
                     <Button
@@ -270,16 +304,19 @@ export default function ShareInfoModal({
                       onClick={() =>
                         setShowAdditionalFields(!showAdditionalFields)
                       }
-                      className="bg-white text-purple-600 border-purple-200 hover:bg-purple-50 hover:text-purple-700 hover:border-purple-300 transition-all"
+                      className={`${isDark ? "bg-slate-950 text-purple-400 border-slate-800 hover:bg-slate-900" : "bg-white text-purple-600 border-purple-200 hover:bg-purple-50"} transition-all`}
                     >
                       {showAdditionalFields ? (
                         <>
-                          <Minus className="mr-2 h-3.5 w-3.5" /> Less Details
+                          {" "}
+                          <Minus className="mr-2 h-3.5 w-3.5" /> Less
+                          Details{" "}
                         </>
                       ) : (
                         <>
+                          {" "}
                           <Plus className="mr-2 h-3.5 w-3.5" /> Add Business
-                          Details
+                          Details{" "}
                         </>
                       )}
                     </Button>
@@ -288,11 +325,15 @@ export default function ShareInfoModal({
 
                 {showAdditionalFields && (
                   <div className="space-y-4 pt-2 animate-in fade-in-0 slide-in-from-top-2 duration-300 ease-out">
-                    <div className="bg-gray-50/50 p-4 rounded-lg border border-gray-100 space-y-4">
+                    <div
+                      className={`${isDark ? "bg-slate-900/30 border-slate-800" : "bg-gray-50/50 border-gray-100"} p-4 rounded-lg border space-y-4`}
+                    >
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <Label className="flex items-center gap-2">
-                            <Building2 className="w-3.5 h-3.5 text-gray-500" />{" "}
+                          <Label
+                            className={`flex items-center gap-2 ${isDark ? "text-slate-300" : "text-gray-700"}`}
+                          >
+                            <Building2 className="w-3.5 h-3.5 opacity-70" />{" "}
                             Business Name
                           </Label>
                           <Input
@@ -303,14 +344,17 @@ export default function ShareInfoModal({
                                 businessName: e.target.value,
                               })
                             }
-                            className="bg-white focus-visible:ring-purple-600 transition-shadow"
+                            className={theme.input}
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label className="flex items-center gap-2">
+                          <Label
+                            className={`flex items-center gap-2 ${isDark ? "text-slate-300" : "text-gray-700"}`}
+                          >
                             <div className="w-3.5 h-3.5" /> Business Phone
                           </Label>
                           <CustomPhoneInput
+                            isDark={isDark}
                             value={formData.businessPhone}
                             onChange={(val) =>
                               setFormData({ ...formData, businessPhone: val })
@@ -320,9 +364,10 @@ export default function ShareInfoModal({
                         </div>
                       </div>
                       <div className="space-y-2">
-                        <Label className="flex items-center gap-2">
-                          <Globe className="w-3.5 h-3.5 text-gray-500" />{" "}
-                          Website
+                        <Label
+                          className={`flex items-center gap-2 ${isDark ? "text-slate-300" : "text-gray-700"}`}
+                        >
+                          <Globe className="w-3.5 h-3.5 opacity-70" /> Website
                         </Label>
                         <Input
                           placeholder="https://"
@@ -333,13 +378,14 @@ export default function ShareInfoModal({
                               website: e.target.value,
                             })
                           }
-                          className="bg-white focus-visible:ring-purple-600 transition-shadow"
+                          className={theme.input}
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label className="flex items-center gap-2">
-                          <MapPin className="w-3.5 h-3.5 text-gray-500" />{" "}
-                          Address
+                        <Label
+                          className={`flex items-center gap-2 ${isDark ? "text-slate-300" : "text-gray-700"}`}
+                        >
+                          <MapPin className="w-3.5 h-3.5 opacity-70" /> Address
                         </Label>
                         <Textarea
                           value={formData.businessAddress || ""}
@@ -349,17 +395,23 @@ export default function ShareInfoModal({
                               businessAddress: e.target.value,
                             })
                           }
-                          className="min-h-[60px] bg-white resize-none focus-visible:ring-purple-600 transition-shadow"
+                          className={`min-h-[60px] resize-none ${theme.input}`}
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label>Notes (Scanned Text)</Label>
+                        <Label
+                          className={
+                            isDark ? "text-slate-300" : "text-gray-700"
+                          }
+                        >
+                          Notes (Scanned Text)
+                        </Label>
                         <Textarea
                           value={formData.notes || ""}
                           onChange={(e) =>
                             setFormData({ ...formData, notes: e.target.value })
                           }
-                          className="min-h-[80px] bg-white text-xs font-mono text-gray-600 focus-visible:ring-purple-600 transition-shadow"
+                          className={`min-h-[80px] font-mono text-xs ${theme.input} ${isDark ? "text-slate-400" : "text-gray-600"}`}
                         />
                       </div>
                     </div>
@@ -369,27 +421,27 @@ export default function ShareInfoModal({
             </div>
           )}
 
-          {/* VIEW 2: THE SCANNER (Imported) */}
           {view === "scanner" && (
             <div className="animate-in slide-in-from-right-8 fade-in duration-300 ease-out h-full flex flex-col">
-              <ScanCard onScanComplete={handleScanComplete} />
+              <ScanCard onScanComplete={handleScanComplete} isDark={isDark} />
             </div>
           )}
         </div>
 
         {/* --- FOOTER --- */}
-        <DialogFooter className="p-6 pt-4 border-t bg-gray-50/50 sm:bg-white flex-col sm:flex-row gap-3 flex-shrink-0">
+        <DialogFooter
+          className={`p-6 pt-4 border-t flex-col sm:flex-row gap-3 flex-shrink-0 ${theme.bgMuted} ${theme.border}`}
+        >
           <Button
             type="button"
             variant="outline"
             onClick={view === "form" ? onClose : () => setView("form")}
-            className="w-full sm:w-auto order-2 sm:order-1 transition-colors"
+            className={`w-full sm:w-auto order-2 sm:order-1 transition-colors ${isDark ? "bg-slate-900 hover:text-slate-400 border-slate-800 text-slate-300 hover:bg-slate-800" : ""}`}
             disabled={loading}
           >
             Cancel
           </Button>
 
-          {/* Only show Submit button when in Form View */}
           {view === "form" && (
             <div className="animate-in fade-in duration-300 w-full sm:w-auto order-1 sm:order-2">
               <Button

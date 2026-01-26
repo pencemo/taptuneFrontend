@@ -79,7 +79,7 @@ export default function ConnectionsPage() {
 
   return (
     <div className="min-h-screen">
-      <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
+      <div className="max-w-7xl mx-auto ">
         {/* --- HEADER AND CONTROLS SECTION --- */}
         <div className="flex flex-col md:flex-row md:justify-between md:items-start mb-8 gap-4">
           {/* Left Side: Title */}

@@ -9,72 +9,86 @@ import { Button } from "@/components/ui/button";
 /* ------------------------- PARSING LOGIC --------------------------- */
 /* ------------------------------------------------------------------ */
 
-// --- 1. PHONE EXTRACTION ---
-// Matches sequences that look like phones (at least 8 digits, allowing separators)
-const PHONE_REGEX = /(?:\+?\d{1,4}[\s\-\.]?)?(?:\(?\d{2,5}\)?[\s\-\.]?)?\d[\d\s\-\.]{5,}\d/g;
+const PHONE_REGEX =
+  /(?:\+?\d{1,4}[\s\-\.]?)?(?:\(?\d{2,5}\)?[\s\-\.]?)?\d[\d\s\-\.]{5,}\d/g;
 
 function extractPhones(text) {
   const matches = text.match(PHONE_REGEX) || [];
-  
   const validPhones = matches
-    .map(p => p.trim()) // Clean whitespace
-    .filter(p => {
+    .map((p) => p.trim())
+    .filter((p) => {
       const digits = p.replace(/\D/g, "");
-      // Requirement: Capture any sequence with more than 8 digits
-      return digits.length >= 8; 
+      return digits.length >= 8;
     });
-
-  return [...new Set(validPhones)]; // Remove duplicates
+  return [...new Set(validPhones)];
 }
 
-// --- 2. EMAIL EXTRACTION ---
 const EMAIL_REGEX = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
 
 function extractEmails(text) {
   const matches = text.match(EMAIL_REGEX) || [];
-  return [...new Set(matches.map(e => e.toLowerCase()))];
+  return [...new Set(matches.map((e) => e.toLowerCase()))];
 }
 
-// --- 3. WEBSITE EXTRACTION ---
-// Captures www.site.com, http://site.com, or site.com (if specific TLDs)
-const URL_REGEX = /(?:https?:\/\/)?(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&//=]*)/g;
+const URL_REGEX =
+  /(?:https?:\/\/)?(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&//=]*)/g;
 
 function extractWebsites(text) {
   const matches = text.match(URL_REGEX) || [];
-  // Filter out emails that might be caught by aggressive URL regexes
-  const validUrls = matches.filter(url => !url.includes('@')); 
-  return [...new Set(validUrls.map(u => u.toLowerCase()))];
+  const validUrls = matches.filter((url) => !url.includes("@"));
+  return [...new Set(validUrls.map((u) => u.toLowerCase()))];
 }
 
-// --- 4. NAME EXTRACTION ---
 const REJECT_WORDS = [
-  "PVT", "LTD", "LLP", "PRIVATE", "LIMITED", "TECH", "TECHNO", 
-  "SOLUTIONS", "SYSTEMS", "EMAIL", "MOBILE", "PHONE", "TEL", 
-  "WWW", "HTTP", "KERALA", "INDIA", "MANAGER", "DIRECTOR", 
-  "ENGINEER", "PH", "MOB", "FAX", "WEBSITE", "ADDRESS"
+  "PVT",
+  "LTD",
+  "LLP",
+  "PRIVATE",
+  "LIMITED",
+  "TECH",
+  "TECHNO",
+  "SOLUTIONS",
+  "SYSTEMS",
+  "EMAIL",
+  "MOBILE",
+  "PHONE",
+  "TEL",
+  "WWW",
+  "HTTP",
+  "KERALA",
+  "INDIA",
+  "MANAGER",
+  "DIRECTOR",
+  "ENGINEER",
+  "PH",
+  "MOB",
+  "FAX",
+  "WEBSITE",
+  "ADDRESS",
 ];
 
 function scoreName(line) {
   let score = 0;
-  if (/^[A-Za-z\s.]+$/.test(line)) score += 3; 
-  if (/[\u0D00-\u0D7F]/.test(line)) score += 4; // Malayalam boost
-  if (line.split(" ").length >= 2) score += 2; 
+  if (/^[A-Za-z\s.]+$/.test(line)) score += 3;
+  if (/[\u0D00-\u0D7F]/.test(line)) score += 4;
+  if (line.split(" ").length >= 2) score += 2;
   if (line.length >= 4 && line.length <= 30) score += 2;
   if (line === line.toUpperCase()) score += 1;
-  if (/\d/.test(line)) score -= 6; // Penalty for numbers
+  if (/\d/.test(line)) score -= 6;
   if (line.includes("@") || line.includes("www")) score -= 10;
   return score;
 }
 
 function extractBestName(text) {
-  const lines = text.split(/\n+/).map(l => l.trim()).filter(l => l.length > 2);
+  const lines = text
+    .split(/\n+/)
+    .map((l) => l.trim())
+    .filter((l) => l.length > 2);
   let bestName = "";
   let bestScore = -Infinity;
-
   for (const line of lines) {
     const upper = line.toUpperCase();
-    if (REJECT_WORDS.some(w => upper.includes(w))) continue;
-    
+    if (REJECT_WORDS.some((w) => upper.includes(w))) continue;
     const score = scoreName(line);
     if (score > bestScore) {
       bestScore = score;
@@ -88,7 +102,7 @@ function extractBestName(text) {
 /* -------------------------- COMPONENT ------------------------------ */
 /* ------------------------------------------------------------------ */
 
-export default function ScanCard({ onScanComplete }) {
+export default function ScanCard({ onScanComplete, isDark = false }) {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const fileInputRef = useRef(null);
@@ -98,27 +112,68 @@ export default function ScanCard({ onScanComplete }) {
   const [statusText, setStatusText] = useState("");
   const [previewImage, setPreviewImage] = useState(null);
 
-  // Camera State
   const [videoDevices, setVideoDevices] = useState([]);
   const [currentDeviceIndex, setCurrentDeviceIndex] = useState(0);
 
-  // --- LIFECYCLE ---
+  // Theme configuration
+const theme = {
+  // Base Layout
+  bg: isDark ? "bg-slate-900" : "bg-white",
+  border: isDark ? "border-slate-800" : "border-gray-200",
+  
+  // Typography
+  text: isDark ? "text-slate-50" : "text-slate-900",
+  textMuted: isDark ? "text-slate-400" : "text-slate-500",
+  
+  // Icons & Accents
+  iconBg: isDark ? "bg-purple-500/15" : "bg-purple-100/80",
+  iconColor: isDark ? "text-purple-400" : "text-purple-600",
+  
+  // Button: Secondary (Retake/Cancel)
+  btnSecondary: isDark
+    ? "bg-slate-800 text-slate-200 hover:bg-slate-700 border-transparent shadow-sm"
+    : "bg-gray-100 text-gray-700 hover:bg-gray-200 border-transparent shadow-sm",
+    
+  // Button: Outline (Upload/Change)
+  btnOutline: isDark
+    ? "border-slate-700 bg-transparent text-slate-300 hover:bg-slate-800 hover:text-slate-100 hover:border-slate-600 shadow-sm"
+    : "border-gray-100 bg-white text-gray-900 hover:bg-gray-50 hover:text-gray-800 hover:border-gray-400 shadow-sm",
+};
+
   useEffect(() => {
-    // Console Cleaner
     const originalWarn = console.warn;
     const originalError = console.error;
-    console.warn = (...args) => { if (typeof args[0] === "string" && (args[0].includes("Parameter") || args[0].includes("classify_cp"))) return; originalWarn(...args); };
-    console.error = (...args) => { if (typeof args[0] === "string" && (args[0].includes("Image too small") || args[0].includes("Line cannot"))) return; originalError(...args); };
+    console.warn = (...args) => {
+      if (
+        typeof args[0] === "string" &&
+        (args[0].includes("Parameter") || args[0].includes("classify_cp"))
+      )
+        return;
+      originalWarn(...args);
+    };
+    console.error = (...args) => {
+      if (
+        typeof args[0] === "string" &&
+        (args[0].includes("Image too small") || args[0].includes("Line cannot"))
+      )
+        return;
+      originalError(...args);
+    };
 
-    // Device Discovery
     const initDevices = async () => {
       try {
         const devices = await navigator.mediaDevices.enumerateDevices();
-        const cams = devices.filter(d => d.kind === "videoinput");
+        const cams = devices.filter((d) => d.kind === "videoinput");
         setVideoDevices(cams);
-        const backIndex = cams.findIndex(d => d.label.toLowerCase().includes("back") || d.label.toLowerCase().includes("environment"));
+        const backIndex = cams.findIndex(
+          (d) =>
+            d.label.toLowerCase().includes("back") ||
+            d.label.toLowerCase().includes("environment"),
+        );
         if (backIndex !== -1) setCurrentDeviceIndex(backIndex);
-      } catch (e) { console.error(e); }
+      } catch (e) {
+        console.error(e);
+      }
     };
     initDevices();
 
@@ -139,26 +194,35 @@ export default function ScanCard({ onScanComplete }) {
     if (videoDevices.length === 0) return;
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { deviceId: { exact: videoDevices[currentDeviceIndex].deviceId }, width: { ideal: 1920 }, height: { ideal: 1080 } },
+        video: {
+          deviceId: { exact: videoDevices[currentDeviceIndex].deviceId },
+          width: { ideal: 1920 },
+          height: { ideal: 1080 },
+        },
       });
       streamRef.current = stream;
       if (videoRef.current) videoRef.current.srcObject = stream;
     } catch {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: "environment" },
+        });
         streamRef.current = stream;
         if (videoRef.current) videoRef.current.srcObject = stream;
-      } catch (e) { console.error("Camera error", e); }
+      } catch (e) {
+        console.error("Camera error", e);
+      }
     }
   };
 
   const stopCamera = () => {
-    streamRef.current?.getTracks().forEach(t => t.stop());
+    streamRef.current?.getTracks().forEach((t) => t.stop());
     streamRef.current = null;
   };
 
   const switchCamera = () => {
-    if (videoDevices.length > 1) setCurrentDeviceIndex(i => (i + 1) % videoDevices.length);
+    if (videoDevices.length > 1)
+      setCurrentDeviceIndex((i) => (i + 1) % videoDevices.length);
   };
 
   const resetScanner = () => {
@@ -168,15 +232,13 @@ export default function ScanCard({ onScanComplete }) {
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  // --- OCR & PROCESSING ---
   const preprocessImage = (canvas) => {
     const ctx = canvas.getContext("2d");
     const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
     const d = imgData.data;
     for (let i = 0; i < d.length; i += 4) {
       let gray = d[i] * 0.2126 + d[i + 1] * 0.7152 + d[i + 2] * 0.0722;
-      // High contrast thresholding
-      const val = gray * 1.2; 
+      const val = gray * 1.2;
       d[i] = d[i + 1] = d[i + 2] = val;
     }
     ctx.putImageData(imgData, 0, 0);
@@ -193,20 +255,15 @@ export default function ScanCard({ onScanComplete }) {
   };
 
   const handleResult = (text) => {
-    // Extract all fields
     const phones = extractPhones(text);
     const name = extractBestName(text);
     const emails = extractEmails(text);
     const websites = extractWebsites(text);
-
-    console.log("OCR Data:", { name, phones, emails, websites });
-
-    // Send everything to parent
     onScanComplete({
       name,
-      phoneNumber: phones.join(", "), // Join multiple phones with comma
-      email: emails[0] || "",         // Take first email
-      website: websites[0] || "",     // Take first website
+      phoneNumber: phones.join(", "),
+      email: emails[0] || "",
+      website: websites[0] || "",
       rawText: text,
     });
   };
@@ -243,57 +300,108 @@ export default function ScanCard({ onScanComplete }) {
   return (
     <div className="w-full max-w-lg mx-auto space-y-6">
       <div className="flex items-center gap-3">
-        <div className="h-10 w-10 rounded-full bg-purple-100 flex items-center justify-center">
+        <div
+          className={`h-10 w-10 rounded-full flex items-center justify-center transition-colors ${theme.iconBg}`}
+        >
           <Camera className="h-5 w-5 text-purple-600" />
         </div>
         <div>
-          <h2 className="text-lg font-semibold text-slate-900">Scan Business Card</h2>
-          <p className="text-xs text-slate-500">Capture to extract Name, Phone, Email & Web</p>
+          <h2
+            className={`text-lg font-semibold transition-colors ${theme.text}`}
+          >
+            Scan Business Card
+          </h2>
+          <p className={`text-xs transition-colors ${theme.textMuted}`}>
+            Capture to extract Name, Phone, Email & Web
+          </p>
         </div>
       </div>
 
-      <div className="relative aspect-[4/3] bg-black rounded-xl overflow-hidden shadow-inner">
+      <div className="relative aspect-[4/3] bg-black rounded-xl overflow-hidden shadow-inner ring-1 ring-slate-800">
         {!previewImage && (
           <>
-            <video ref={videoRef} autoPlay playsInline className="w-full h-full object-cover" />
+            <video
+              ref={videoRef}
+              autoPlay
+              playsInline
+              className="w-full h-full object-cover"
+            />
             {!processing && videoDevices.length > 1 && (
-              <button onClick={switchCamera} className="absolute top-3 right-3 bg-black/60 p-2 rounded-full text-white hover:bg-black/80 transition-all">
+              <button
+                onClick={switchCamera}
+                className="absolute top-3 right-3 bg-black/60 p-2 rounded-full text-white hover:bg-black/80 transition-all backdrop-blur-sm"
+              >
                 <SwitchCamera className="w-5 h-5" />
               </button>
             )}
             {!processing && (
-                <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-                    <div className="w-[85%] h-[65%] border-2 border-white/60 rounded-lg relative"></div>
-                </div>
+              <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+                <div className="w-[95%] h-[78%] border-2 border-white/40 rounded-lg relative shadow-[0_0_0_1000px_rgba(0,0,0,0.3)]"></div>
+              </div>
             )}
           </>
         )}
-        {previewImage && <img src={previewImage} alt="Preview" className="w-full h-full object-contain bg-black" />}
+        {previewImage && (
+          <img
+            src={previewImage}
+            alt="Preview"
+            className="w-full h-full object-contain bg-black"
+          />
+        )}
         {processing && (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/70 backdrop-blur-sm z-10">
-            <Loader2 className="h-10 w-10 text-white animate-spin" />
-            <p className="text-xs text-white mt-3 font-medium animate-pulse">{statusText || "Processing..."}</p>
+            <Loader2 className="h-10 w-10 text-purple-500 animate-spin" />
+            <p className="text-xs text-white mt-4 font-medium animate-pulse tracking-wide">
+              {statusText || "Processing..."}
+            </p>
           </div>
         )}
       </div>
 
       <canvas ref={canvasRef} className="hidden" />
-      <input ref={fileInputRef} type="file" hidden accept="image/*" onChange={handleFileUpload} />
+      <input
+        ref={fileInputRef}
+        type="file"
+        hidden
+        accept="image/*"
+        onChange={handleFileUpload}
+      />
 
       <div className="grid grid-cols-2 gap-3">
-        <Button variant="outline" onClick={() => fileInputRef.current.click()} disabled={processing} className="w-full">
-          <Upload className="h-4 w-4 mr-2" /> {previewImage ? "Change" : "Upload"}
+        <Button
+          variant="outline"
+          type="button"
+          onClick={() => fileInputRef.current.click()}
+          disabled={processing}
+          className={`w-full transition-all duration-200 active:scale-[0.98] flex items-center justify-center font-medium ${theme.btnOutline}`}
+        >
+          <Upload
+            className={`h-4 w-4 mr-2 ${isDark ? "text-slate-400" : "text-gray-900"}`}
+          />
+          {previewImage ? "Change Image" : "Upload Card"}
         </Button>
         {!previewImage ? (
-            <Button onClick={captureImage} disabled={processing} className="w-full bg-purple-600 hover:bg-purple-700 text-white">
+          <Button
+            onClick={captureImage}
+            disabled={processing}
+            className="w-full bg-purple-600 hover:bg-purple-700 text-white shadow-md active:scale-[0.98] transition-all"
+          >
             <Camera className="h-4 w-4 mr-2" /> Capture
-            </Button>
+          </Button>
         ) : (
-            <Button variant="secondary" onClick={resetScanner} disabled={processing} className="w-full">
+          <Button
+            variant="secondary"
+            onClick={resetScanner}
+            disabled={processing}
+            className={`w-full transition-all ${theme.btnSecondary}`}
+          >
             <RotateCcw className="h-4 w-4 mr-2" /> Retake
-            </Button>
+          </Button>
         )}
       </div>
     </div>
   );
 }
+
+
+

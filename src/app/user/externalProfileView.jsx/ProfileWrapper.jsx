@@ -206,9 +206,9 @@ const handleConnectSubmit = () => {
           setFormData={setFormData}
           onSubmit={handleConnectSubmit}
           loading={isConnecting}
+          isDark={true}
         />
       )}
-
     </>
   );
 }
