@@ -51,12 +51,12 @@ END:VCARD`;
                 alt={profile?.fullName}
                 className="w-28 h-28 rounded-2xl border-2 border-purple-600 shadow-lg object-cover"
               />
-              {profile?.isActive && (
+              {/* {profile?.isActive && (
                 <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full border-2 border-gray-900" />
               )}
               <div className="absolute -top-2 -right-2 bg-amber-400 p-1.5 rounded-full border-2 border-gray-900">
                 <Star className="w-4 h-4 text-gray-900 fill-amber-400" />
-              </div>
+              </div> */}
             </div>
             <div>
               <h1 className="text-3xl font-extrabold">{profile?.fullName}</h1>
@@ -120,7 +120,7 @@ END:VCARD`;
               <a
                 key={idx}
                 href={item.href}
-                className="flex flex-col items-center gap-2 p-4 bg-gray-700/50 hover:bg-gray-700/70 
+                className="flex flex-col items-center gap-2 p-4 bg-gray-700/50 hover:bg-gray-700/70
                    rounded-2xl transition-all shadow-md text-gray-100 hover:scale-105"
               >
                 {item.type === "react-icon" ? (
@@ -185,6 +185,7 @@ END:VCARD`;
 }
 
 export default ProfileElite;
+
 
 
 
